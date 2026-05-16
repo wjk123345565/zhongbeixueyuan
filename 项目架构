@@ -1,0 +1,39 @@
+NnuZcAgent/
+├── web_ui.py                 # 【表现层】前端入口文件，基于 Streamlit 的流式对话交互界面
+├── main.py               # 项目的主入口文件
+├── requirements.txt          # 项目依赖清单 (包含应对依赖冲突降级的 protobuf)
+├── .gitignore                # Git 忽略配置 (保护本地 .env 不被泄露)
+├── .env                      # (仅本地存在) 环境变量配置，存放通义千问 API Key
+│
+├── admissions.db             # 【数据层】SQLite 关系型数据库，存储历年结构化分数线
+├── chroma_db/                # 【数据层】Chroma 向量数据库目录，存储非结构化政策文本向量
+│
+├── data/                     # 【原始数据仓库】
+│   ├── structured/           # 存放用于生成 SQL 的结构化历年分数数据 (如: 2024_江苏.txt)
+├   |   ├── 2023_江苏省.txt
+|   |   ├── 2024_江苏省.txt
+|   |   ├── 2024_浙江省.txt
+|   |   └── ... (把你的TXT文件都扔这里)
+│   └── unstructured/         # 存放用于 RAG 检索的非结构化长文本 (如: zhongbei_policy.txt)
+|       ├── 2024_转专业政策.txt
+├       ├── 2024_奖学金评定办法.txt
+|       └── 中北学院_宿舍与生活指南.txt
+│
+├── scripts/                  # 【自动化流水线】
+│   ├── batch_build_db.py     # 将 structured 下的文件批量清洗并写入 SQLite
+│   └── batch_ingest_rag.py   # 将 unstructured 下的文件切块、向量化并存入 ChromaDB
+│
+└── src/                      # 【核心业务逻辑层】
+    ├── graph.py              # LangGraph 状态图定义，串联起所有的 Agent 节点和路由
+    ├── state.py              # AgentState 状态定义，管理节点间流转的全局上下文信息
+    ├── utils/                # 工具箱
+    │   └── llm.py            # 大语言模型初始化配置 (带云端防崩溃处理机制)
+    ├── edges/            # 路由边 (Edges) 逻辑
+    │   ├── __init__.py
+    │   └── routes.py     # 条件判断逻辑
+    │
+    └── nodes/                # 【智能体节点】(大脑的不同分区)
+        ├── router.py         # 意图识别路由节点 (决定走 RAG、SQL 还是日常闲聊)
+        ├── data_analyst.py   # 数据分析节点 (Text-to-SQL，负责分数查询、模糊匹配与智能推荐)
+        ├── rag.py            # 政策检索节点 (从向量库召回文档并生成回答)
+        └── chat.py           # 闲聊接待节点 (处理日常打招呼与通用对话)
