@@ -28,13 +28,17 @@ def synthesizer_node(state: AgentState):
     # 1. 提取用户的原始问题 (通常是消息列表里的最后一条用户的发言)
     original_question = state["messages"][-1].content
     
-    # 2. 组装所有执行专员交上来的“证据”
+    # 2. 组装所有执行专员交上来的"证据"
     past_steps = state.get("past_steps", [])
     facts = ""
     for i, (task_name, task_result) in enumerate(past_steps, 1):
-        facts += f"--- 事实 {i} ---\n【执行任务】：{task_name}\n【查证结果】：{task_result}\n\n"
+        facts += "--- 事实 " + str(i) + " ---\n【执行任务】：" + task_name + "\n【查证结果】：" + str(task_result) + "\n\n"
         
-    print(f"📦 [Synthesizer] 收集到的证据池：\n{facts}")
+    print("📦 [Synthesizer] 收集到的证据池：\n" + facts)
+    
+    # 转义变量中的大括号，避免模板解析错误
+    original_question = original_question.replace("{", "{{").replace("}", "}}")
+    facts = facts.replace("{", "{{").replace("}", "}}")
     
     # 3. 唤醒大模型进行最终的润色和总结
     chain = synthesizer_prompt | llm
@@ -44,7 +48,7 @@ def synthesizer_node(state: AgentState):
     })
     
     final_answer = response.content
-    print(f"🎉 [Synthesizer] 最终回复撰写完毕！")
+    print("🎉 [Synthesizer] 最终回复撰写完毕！")
     
     # 4. 完美谢幕：
     # - 将最终回答打包成 AIMessage 追加到聊天记录中供前端展示

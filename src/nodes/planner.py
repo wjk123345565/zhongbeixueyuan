@@ -62,7 +62,7 @@ def planner_node(state: AgentState):
     # 拿到用户最新的一句话
     question = state['messages'][-1].content
     
-    print(f"🧠 Planner 正在思考如何拆解任务：{question}")
+    print("🧠 Planner 正在思考如何拆解任务：" + question)
     
     try:
         # 唤醒大模型进行推理拆解
@@ -78,10 +78,10 @@ def planner_node(state: AgentState):
             print("📋 Planner 生成了空任务单，自动转入闲聊兜底。")
             return {"plan": ["调用闲聊专员：回复用户的日常对话"]}
             
-        print(f"📋 Planner 拆解出的任务清单：{plan_result.steps}")
+        print("📋 Planner 拆解出的任务清单：" + str(plan_result.steps))
         return {"plan": plan_result.steps}
         
     except Exception as e:
         # 🛡️ 终极兜底：万一大模型网络波动或抛出任何异常，系统不崩溃，直接让闲聊专员安抚用户
-        print(f"⚠️ Planner 解析发生异常: {str(e)}")
+        print("⚠️ Planner 解析发生异常: " + str(e))
         return {"plan": ["调用闲聊专员：安抚用户，说明系统正在开小差"]}

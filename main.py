@@ -23,7 +23,7 @@ def run_chat_cli():
         
         # 提取最后一条消息作为助手的回复
         final_message = result['messages'][-1].content
-        print(f"\n[招生助手]: {final_message}")
+        print("\n[招生助手]: " + final_message)
 
 if __name__ == "__main__":
     run_chat_cli()

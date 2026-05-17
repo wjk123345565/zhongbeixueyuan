@@ -36,16 +36,16 @@ if os.path.exists(json_path):
                 # 将问题存入 page_content 用于检索，答案存入 metadata 用于展示
                 docs.append(Document(page_content=question, metadata={"answer": clean_answer}))
     except Exception as e:
-        print(f"❌ [RAG Expert] 加载 JSON 失败: {str(e)}")
+        print("❌ [RAG Expert] 加载 JSON 失败: " + str(e))
 else:
-    print(f"⚠️ [RAG Expert] 严重警告：未在 {json_path} 找到知识库文件！")
+    print("⚠️ [RAG Expert] 严重警告：未在 " + json_path + " 找到知识库文件！")
 
 # 构建内存向量库
 if docs:
     # 每次检索最相关的 2 条政策以保证上下文精简
     vectorstore = Chroma.from_documents(documents=docs, embedding=embeddings)
     retriever = vectorstore.as_retriever(search_kwargs={"k": 2})
-    print(f"✅ [RAG Expert] 知识库加载完成，共包含 {len(docs)} 条问答数据。")
+    print("✅ [RAG Expert] 知识库加载完成，共包含 " + str(len(docs)) + " 条问答数据。")
 else:
     retriever = None
 
@@ -62,7 +62,7 @@ def rag_expert_node(state: AgentState):
         return {"messages": state["messages"]}
 
     current_task = state["plan"][0]
-    print(f"📚 [RAG Expert] 正在为任务检索知识库: {current_task}")
+    print("📚 [RAG Expert] 正在为任务检索知识库: " + current_task)
 
     if not retriever:
         final_data = "知识库未正确初始化或为空，无法检索相关政策。"
@@ -78,7 +78,7 @@ def rag_expert_node(state: AgentState):
             context_parts = []
             for i, res in enumerate(results):
                 context_parts.append(
-                    f"【相关资料 {i+1}】\n探讨问题：{res.page_content}\n原文规定：{res.metadata['answer']}"
+                    "【相关资料 " + str(i+1) + "】\n探讨问题：" + res.page_content + "\n原文规定：" + res.metadata['answer']
                 )
             
             final_data = "根据知识库检索得到以下权威信息：\n" + "\n\n".join(context_parts)

@@ -119,18 +119,22 @@ def rag_agent_node(state: AgentState):
     """
     # 1. 认领任务
     current_task = state["plan"][0]
-    print(f"\n📚 [RAG Agent] 开始执行子任务 ➡️ {current_task}")
+    print("\n📚 [RAG Agent] 开始执行子任务 ➡️ " + current_task)
 
     # 2. 检索向量数据库
     docs = vector_db.similarity_search(current_task, k=3)
     context = "\n".join([doc.page_content for doc in docs])
 
-    # 3. 生成回答
+    # 3. 转义上下文中的大括号，避免模板解析错误
+    context = context.replace("{", "{{").replace("}", "}}")
+    current_task = current_task.replace("{", "{{").replace("}", "}}")
+    
+    # 4. 生成回答
     chain = rag_prompt | llm
     response = chain.invoke({"context": context, "current_task": current_task})
     result_text = response.content
     
-    print(f"✅ [RAG Agent] 政策检索完毕。")
+    print("✅ [RAG Agent] 政策检索完毕。")
 
     # 4. 核销任务并上报成果
     return {

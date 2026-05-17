@@ -17,7 +17,7 @@ def task_router(state: AgentState) -> str:
     # 场景 2：清单里还有任务，派发当前的第一个任务
     # ==========================================
     current_task = plan[0]
-    print(f"🔀 调度中心：正在派发当前任务 -> [{current_task}]")
+    print("🔀 调度中心：正在派发当前任务 -> [" + current_task + "]")
     
     # 因为我们在 Planner 的 Prompt 中明确规定了要带上"SQL专员"或"RAG专员"的字眼
     # 所以这里用非常轻量、极速的关键词匹配就能精准路由，不需要再调一次大模型

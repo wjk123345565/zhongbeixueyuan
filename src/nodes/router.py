@@ -31,7 +31,7 @@ def task_router(state: AgentState) -> str:
         "课程", "学费", "简章", "性质", "要求", "[KNOWLEDGE]"
     ]
     if any(k in current_task for k in rag_keywords):
-        print(f"🔀 [调度中心] 匹配到知识检索任务 -> [RAG 专员]: {current_task}")
+        print("🔀 [调度中心] 匹配到知识检索任务 -> [RAG 专员]: " + current_task)
         return "rag_agent"
 
     # --- B. 数据查询类 (SQL 专家) ---
@@ -40,7 +40,7 @@ def task_router(state: AgentState) -> str:
     if any(k in current_task for k in data_keywords):
         # 再次确认不是课程类咨询，防止“查询音乐专业课程”误入
         if not any(k in current_task for k in ["课程", "学费", "介绍"]):
-            print(f"🔀 [调度中心] 匹配到精确数据任务 -> [SQL 专员]: {current_task}")
+            print("🔀 [调度中心] 匹配到精确数据任务 -> [SQL 专员]: " + current_task)
             return "data_analyst"
         
     # --- C. 日常寒暄/闲聊类 ---
@@ -51,5 +51,5 @@ def task_router(state: AgentState) -> str:
         
     # 4. 兜底保护逻辑
     else:
-        print(f"⚠️ [调度中心] 无法识别的任务类型: {current_task}，强制进入汇总。")
+        print("⚠️ [调度中心] 无法识别的任务类型: " + current_task + "，强制进入汇总。")
         return "synthesizer"

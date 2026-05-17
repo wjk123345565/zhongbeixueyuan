@@ -3,14 +3,14 @@ langchain-community
 dashscope
 python-dotenv
 streamlit
-chromadb 
+chromadb
 tiktoken
 streamlit
 langchain-core
 protobuf==3.20.3
 fastapi
 langchain-chroma
-langchain-chroma 
-sentence-transformers 
+langchain-chroma
+sentence-transformers
 huggingface-hub
 torchvision

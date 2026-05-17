@@ -23,7 +23,7 @@ def get_db_schema(db_path: str) -> str:
         conn.close()
         return row[0] if row else "表 admission_scores 不存在"
     except Exception as e:
-        return f"获取 Schema 失败: {str(e)}"
+        return "获取 Schema 失败: " + str(e)
 
 # ==========================================
 # 2. SQL Generator (负责写 SQL 和修 Bug)
@@ -63,16 +63,22 @@ def sql_generator_node(state: AgentState):
     schema_info = get_db_schema(db_path)
 
     if error:
-        print(f"🔄 [SQL Generator] 触发第 {retries} 次自我修复！正在分析报错: {error}")
+        print("🔄 [SQL Generator] 触发第 " + str(retries) + " 次自我修复！正在分析报错: " + str(error))
     else:
-        print(f"🧠 [SQL Generator] 开始为任务编写 SQL: {current_task}")
+        print("🧠 [SQL Generator] 开始为任务编写 SQL: " + current_task)
 
+    # 转义变量中的大括号，避免模板解析错误
+    schema_info = schema_info.replace("{", "{{").replace("}", "}}")
+    current_task = current_task.replace("{", "{{").replace("}", "}}")
+    sql_error_msg = ("你上一次写的SQL报错了：" + error) if error else "无报错，请直接生成。"
+    sql_error_msg = sql_error_msg.replace("{", "{{").replace("}", "}}")
+    
     # 调用大模型生成 SQL
     chain = sql_generation_prompt | llm
     response = chain.invoke({
         "schema": schema_info,
         "current_task": current_task,
-        "sql_error": f"你上一次写的SQL报错了：{error}" if error else "无报错，请直接生成。"
+        "sql_error": sql_error_msg
     })
     
     # 清理 SQL 文本中的 Markdown 标记
@@ -82,10 +88,10 @@ def sql_generator_node(state: AgentState):
     # 安全拦截：防止非法 SQL 指令
     forbidden_words = ["DROP", "DELETE", "UPDATE", "INSERT", "ALTER"]
     if any(word in clean_sql.upper() for word in forbidden_words):
-        print(f"⚠️ [SQL Generator] 检测到非法 SQL 指令，已拦截: {clean_sql}")
+        print("⚠️ [SQL Generator] 检测到非法 SQL 指令，已拦截: " + clean_sql)
         return {"sql_error": "Security Breach: Unauthorized SQL Keywords Detected."}
 
-    print(f"📝 [SQL Generator] 产出 SQL: {clean_sql}")
+    print("📝 [SQL Generator] 产出 SQL: " + clean_sql)
     
     # 将生成的 SQL 存入状态，供 Executor 使用
     return {"current_sql": clean_sql, "sql_retries": retries + 1}
@@ -110,7 +116,7 @@ def sql_executor_node(state: AgentState):
         db_path = os.path.abspath(os.path.join(current_dir, "../../admissions.db"))
         
         if not os.path.exists(db_path):
-            raise FileNotFoundError(f"极其严重的路径错误：系统无法在 {db_path} 找到数据库文件！")
+            raise FileNotFoundError("极其严重的路径错误：系统无法在 " + db_path + " 找到数据库文件！")
             
         conn = sqlite3.connect(db_path)
         # 改进：使用 Row 对象方便直接映射为带有列名的字典
@@ -128,8 +134,8 @@ def sql_executor_node(state: AgentState):
             return {"sql_error": "EMPTY_RESULT: 查询结果为空。请检查 LIKE 关键词是否太细，尝试提取更核心的词根。"}
 
         # 执行成功：核销任务并记录成果
-        final_data = f"执行 SQL: {sql} \n查询结果: {results}"
-        print(f"✅ [SQL Executor] 执行成功！任务完成。数据: {results}")
+        final_data = "执行 SQL: " + sql + " \n查询结果: " + str(results)
+        print("✅ [SQL Executor] 执行成功！任务完成。数据: " + str(results))
         
         return {
             "past_steps": [(current_task, final_data)], 
@@ -141,12 +147,12 @@ def sql_executor_node(state: AgentState):
         
     except Exception as e:
         error_msg = str(e)
-        print(f"❌ [SQL Executor] 执行崩溃：{error_msg}")
+        print("❌ [SQL Executor] 执行崩溃：" + error_msg)
         
         if retries >= max_retries:
             # 超过最大重试次数，宣告任务失败
             print("🛑 [SQL Executor] 重试次数耗尽，宣告任务失败。")
-            final_data = f"尝试 {max_retries} 次后依然无法查询该数据。最后一次报错：{error_msg}"
+            final_data = "尝试 " + str(max_retries) + " 次后依然无法查询该数据。最后一次报错：" + error_msg
             return {
                 "past_steps": [(current_task, final_data)],
                 "plan": state["plan"][1:],
