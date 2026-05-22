@@ -60,7 +60,11 @@ else:
 # 构建内存向量库
 if docs:
     # 每次检索最相关的 2 条政策以保证上下文精简
-    vectorstore = Chroma.from_documents(documents=docs, embedding=embeddings)
+    vectorstore = Chroma.from_documents(
+        documents=docs,
+        embedding=embeddings,
+        persist_directory=data_dir
+    )
     retriever = vectorstore.as_retriever(search_kwargs={"k": 2})
     print(f"✅ [RAG Expert] 知识库加载完成！共成功读取 {loaded_files} 个文件，包含 {len(docs)} 条问答数据。")
 else:
