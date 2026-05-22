@@ -16,7 +16,7 @@ model_name = "BAAI/bge-small-zh-v1.5"
 embeddings = HuggingFaceBgeEmbeddings(
     model_name=model_name, 
     model_kwargs={'device': 'cpu'}, 
-    encode_kwargs={'normalize_embeddings': True}
+    encode_kwargs={'normalize_embeddings': False}
 )
 
 # 路径处理：确保能定位到项目根目录下的 unstructured 文件夹
