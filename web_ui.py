@@ -8,11 +8,14 @@ from langchain_core.messages import HumanMessage, AIMessage
 from src.graph import app as chat_app
 from src.planning_graph import planning_app
 
+# ====================== 这里添加了自动隐藏侧边栏 ======================
 st.set_page_config(
     page_title="中北学院招生智能体",
     page_icon="🎓",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"  # 自动隐藏侧边栏（手机/电脑都生效）
 )
+# ======================================================================
 
 st.markdown("""
 <style>
